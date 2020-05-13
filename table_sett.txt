@@ -1,0 +1,88 @@
+myaccount
+account_num int primary key (계좌번호)
+account_type int not null (계좌 타입 주거래: 1 입금형:2 출금형:3)
+balance int default 0 (잔고)
+name varchar(20) not null, (예금주)
+open_date date default sysdate (개설일)
+m_res_date date 
+
+
+input_tab
+account_num int계좌번호 (foreign key)
+input_type int not null(1.은행이체 2.온라인이체 3. atm이체 4.모바일 이체)
+deposit int not null
+sender varchar(30) not null,
+message varchar(50) default '-',
+i_res_date date default sysdate primary key,
+constraint fk_input_tab foreign key (account_num) references myaccount
+
+insert into input_tab (account_num, input_type, deposit, sender) values (1,1,10000,'김철수');
+insert into input_tab (account_num, input_type, deposit, sender) values (2,1,15000,'김영수');
+insert into input_tab (account_num, input_type, deposit, sender) values (3,2,3000,'김화영');
+
+create table res_tab(
+account_num int,
+i_res_date varchar2(100),
+o_res_date varchar2(100),
+res date default sysdate);
+
+
+output_tab
+account_num int 계좌번호 (foreign key)
+output_type int not null(1.계좌이체 2.자동이체 3.기타)
+withdraw int, 출금액
+receive_account int not null,받는계좌번호
+receiver varchar(30),
+memo varchar(100) default '-',
+o_res_date date default sysdate primary key,
+constraint fk_output_tab foreign key (account_num) references myaccount
+
+insert into output_tab (account_num, output_type, withdraw, receive_account, receiver) values (1,1,2000,3,'김화영');
+insert into output_tab (account_num, output_type, withdraw, receive_account, receiver) values (1,1,2000,3,'김화영');
+insert into output_tab (account_num, output_type, withdraw, receive_account, receiver) values (2,1,2400,2,'김철수');
+
+입금 내역 확인 쿼리
+SELECT I.* FROM INPUT_TAB I JOIN MYACCOUNT M ON I.ACCOUNT_NUM = M.ACCOUNT_NUM WHERE I.ACCOUNT_NUM =?
+
+출금 내역 확인 쿼리
+SELECT O.* FROM OUTPUT_TAB O JOIN MYACCOUNT M ON O.ACCOUNT_NUM = M.ACCOUNT_NUM WHERE O.ACCOUNT_NUM=?
+
+계좌 상세 조회 쿼리
+select i.*, o.*, r.res from res_tab r left outer join input_tab i on r.res = i.i_res_date and r.account_num = i.account_num left outer join output_tab o on r.res=o.o_res_date and r.account_num = o.account_num where r.account_num = 2;
+==================================================
+1. web.xml
+  <servlet>
+     <servlet-name>board</servlet-name>
+     <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+     <servlet-name>board</servlet-name>
+     <url-pattern>*.do</url-pattern>
+  </servlet-mapping>
+추가
+
+2. Cotents.xml
+<Context>
+   <Resource name="jdbc/orcl" auth="container" type="javax.sql.DataSource" username="KSK" password="162534" driverClassName="oracle.jdbc.driver.OracleDriver" factory="org.apache.commons.dbcp.BasicDataSourceFactory" url="jdbc:oracle:thin:@localhost:1521:XE" maxActive="20" maxIdle="10"   >
+   </Resource>
+</Context>
+작성
+
+3. 필요 컨트롤러
+ListActionController 
+InquiryActionController
+CreateActionController
+InputActionController
+OutputActionController
+4. 필요 view
+index.jsp
+create.jsp
+input.jsp
+output.jsp
+list.jsp
+inquiry.jsp
+
+
+=====================================================================================================
+output 부분 하면되고
+inquiry 부분 해결 하면 끝
